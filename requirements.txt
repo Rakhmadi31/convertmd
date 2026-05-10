@@ -1,0 +1,5 @@
+# Python dependencies for konvertmd.py
+streamlit>=1.0
+
+# Pandoc is required as a separate system installation:
+# https://pandoc.org/installing.html

@@ -1,0 +1,102 @@
+import streamlit as st
+from pathlib import Path
+import tempfile
+
+def convert_file(
+    uploaded_file, 
+    to_format: str, 
+    save_dir: Path
+):
+    import tempfile
+    import subprocess
+    output_path = save_dir / f"{uploaded_file.name.split('.')[0]}.{to_format}"
+    # Write uploaded file to temp file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}") as tmp:
+        tmp.write(uploaded_file.read())
+        tmp.flush()
+        input_path = tmp.name
+        
+        # Run pandoc for conversion
+        try:
+            subprocess.run([
+                "pandoc", input_path, "-o", str(output_path)
+            ], check=True)
+            return output_path
+        except Exception as e:
+            st.error(f"Gagal mengonversi file: {e}")
+            return None
+
+st.set_page_config(page_title="Konversi File MD <-> DOCX / PDF", page_icon="📝")
+st.title("Aplikasi Konversi File: Markdown ↔️ DOCX/DOC/PDF")
+
+st.markdown("""
+**Fitur:**  
+- Konversi file _Markdown_ (`.md`) ke `.docx`, `.doc`, atau `.pdf`
+- Konversi file `.docx`, `.doc`, dan `.pdf` ke _Markdown_ (`.md`)
+- Antarmuka sederhana, cocok untuk akademisi & profesional
+
+**Metodologi:**  
+Konversi memanfaatkan _Pandoc_ untuk memastikan kompatibilitas format dokumen (justifikasi: pandoc adalah perangkat lunak standar konversi dokumen bereputasi dan mendukung metodologi replikasi penelitian, _validitas_ dan _reliabilitas_ konversi tinggi).
+""")
+
+tab_upload, tab_about = st.tabs(["Konversi File", "Tentang"])
+
+with tab_upload:
+    uploaded_file = st.file_uploader("Unggah file (.md, .docx, .doc, .pdf):", type=['md', 'docx', 'doc', 'pdf'])
+    col1, col2 = st.columns(2)
+
+    if uploaded_file:
+        st.write("**Nama File:**", uploaded_file.name)
+        file_ext = uploaded_file.name.split(".")[-1].lower()
+        formats_to = []
+        if file_ext == "md":
+            formats_to = ["docx", "doc", "pdf"]
+        elif file_ext in ["docx", "doc", "pdf"]:
+            formats_to = ["md"]
+        else:
+            st.error("Tipe file tidak didukung.")
+        
+        with col1:
+            if formats_to:
+                to_format = st.selectbox("Konversi ke format:", formats_to)
+                convert_btn = st.button("Konversi")
+        with col2:
+            st.markdown("""
+            <div style='font-size: 13px; color:#666;'>Pastikan <b>Pandoc</b> terinstal di sistem Anda.<br>
+            <code>pip install pandoc</code> atau <a href='https://pandoc.org/installing.html' target='_blank'>Ikuti panduan resmi</a></div>
+            """, unsafe_allow_html=True)
+        
+        if 'convert_btn' in locals() and convert_btn:
+            with st.spinner("Mengonversi..."):
+                save_dir = Path(tempfile.gettempdir())
+                converted = convert_file(uploaded_file, to_format, save_dir)
+                if converted and converted.exists():
+                    st.success(f"Konversi berhasil ke {converted.suffix.upper()[1:]}")
+                    with open(converted, "rb") as f:
+                        st.download_button(
+                            label=f"Unduh {converted.name}",
+                            data=f.read(),
+                            file_name=converted.name
+                        )
+    else:
+        st.info("Silakan unggah file terlebih dahulu.")
+
+with tab_about:
+    st.header("Penjelasan Akademik")
+    st.markdown("""
+- **Metode:**  
+  Proses konversi dokumen berbasis framework _Pandoc_, yang mendukung interoperabilitas multi-format dokumen ilmiah dan sesuai standar akademik internasional (Chicago Notes-Bibliography, PUEBI).
+- **Justifikasi Metodologis:**  
+  Pandoc dipilih karena _reliable_, _open-source_, memungkinkan pelacakan perubahan (_traceability_) dan _repeatability_ riset.
+- **Keterbatasan:**  
+  Format sangat kompleks (mis: tabel besar, gambar tersemat, formula matematika tingkat lanjut) bisa memerlukan validasi hasil konversi manual.
+- **Referensi:**  
+  - Pandoc User's Guide: https://pandoc.org/MANUAL.html
+
+**Saran Pengembangan:**
+- Integrasi dengan pengenalan metadata otomatis untuk bibliometrik.
+- Penambahan fitur pratinjau hasil.
+- Pengembangan pipeline batch processing untuk riset skala besar.
+
+_Dikembangkan sesuai etika akademik oleh Rakhmadi Irfansyah Putra_.
+""")
