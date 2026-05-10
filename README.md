@@ -1,4 +1,4 @@
-# Aplikasi Konversi Dokumen Markdown ↔️ DOCX/DOC/PDF
+# Aplikasi Konversi Dokumen Markdown >< DOCX/DOC/PDF
 
 ## Deskripsi
 Aplikasi ini adalah antarmuka Streamlit untuk mengonversi file Markdown (`.md`) ke file `.docx`, `.doc`, atau `.pdf`, serta mengonversi file `.docx`, `.doc`, dan `.pdf` kembali ke Markdown (`.md`). Konversi dilakukan menggunakan Pandoc sebagai mesin standar untuk memastikan kompatibilitas dokumen yang baik.
