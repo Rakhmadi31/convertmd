@@ -34,10 +34,17 @@ def convert_file(
             cmd = [pandoc_path, input_path, "-o", str(output_path)]
             if to_format == "pdf":
                 xelatex_path = shutil.which("xelatex")
+                pdflatex_path = shutil.which("pdflatex")
                 if xelatex_path:
                     cmd.extend(["--pdf-engine=xelatex"])
-                else:
+                elif pdflatex_path:
                     cmd.extend(["--pdf-engine=pdflatex"])
+                else:
+                    st.error(
+                        "PDF engine tidak tersedia di server. "
+                        "Pasang `xelatex` atau `pdflatex` agar konversi PDF berhasil."
+                    )
+                    return None
 
                 lua_filter = Path(__file__).parent / "pandoc_wrap_tables.lua"
                 if lua_filter.exists():
@@ -51,8 +58,14 @@ def convert_file(
             )
             return output_path
         except subprocess.CalledProcessError as e:
-            message = e.stderr.strip() if e.stderr else str(e)
-            st.error(f"Gagal mengonversi file: {message}")
+            stderr = e.stderr.strip() if e.stderr else ""
+            stdout = e.stdout.strip() if e.stdout else ""
+            message = stderr or stdout or str(e)
+            if stderr and stdout:
+                message = f"{stderr}\n{stdout}"
+            st.error(
+                f"Gagal mengonversi file: exit code {e.returncode}. {message}"
+            )
             return None
         except FileNotFoundError:
             st.error(
