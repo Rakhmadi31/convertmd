@@ -7,14 +7,16 @@ pandoc_path = shutil.which("pandoc")
 pandoc_available = pandoc_path is not None
 
 def convert_file(
-    uploaded_file, 
-    to_format: str, 
+    uploaded_file,
+    to_format: str,
     save_dir: Path
 ):
     import subprocess
-    output_path = save_dir / f"{uploaded_file.name.split('.')[0]}.{to_format}"
+    source_file = Path(uploaded_file.name)
+    output_path = save_dir / f"{source_file.stem}.{to_format}"
+    suffix = source_file.suffix or f".{uploaded_file.name.split('.')[-1]}"
     # Write uploaded file to temp file
-    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}") as tmp:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(uploaded_file.read())
         tmp.flush()
         input_path = tmp.name
@@ -60,11 +62,11 @@ def convert_file(
             return None
 
 st.set_page_config(page_title="Konversi File MD <-> DOCX / PDF", page_icon="📝")
-st.title("Aplikasi Konversi File: Markdown ↔️ DOCX/DOC/PDF")
+st.title("Aplikasi Konversi File: Markdown ↔️ DOCX/PDF")
 
 st.markdown("""
 **Fitur:**  
-- Konversi file _Markdown_ (`.md`) ke `.docx`, `.doc`, atau `.pdf`
+- Konversi file _Markdown_ (`.md`) ke `.docx` atau `.pdf`
 - Konversi file `.docx`, `.doc`, dan `.pdf` ke _Markdown_ (`.md`)
 - Antarmuka sederhana, cocok untuk akademisi & profesional
 
@@ -83,7 +85,7 @@ with tab_upload:
         file_ext = uploaded_file.name.split(".")[-1].lower()
         formats_to = []
         if file_ext == "md":
-            formats_to = ["docx", "doc", "pdf"]
+            formats_to = ["docx", "pdf"]
         elif file_ext in ["docx", "doc", "pdf"]:
             formats_to = ["md"]
         else:

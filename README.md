@@ -1,7 +1,7 @@
-# Aplikasi Konversi Dokumen Markdown >< DOCX/DOC/PDF
+# Aplikasi Konversi Dokumen Markdown ↔️ DOCX/PDF
 
 ## Deskripsi
-Aplikasi ini adalah antarmuka Streamlit untuk mengonversi file Markdown (`.md`) ke file `.docx`, `.doc`, atau `.pdf`, serta mengonversi file `.docx`, `.doc`, dan `.pdf` kembali ke Markdown (`.md`). Konversi dilakukan menggunakan Pandoc sebagai mesin standar untuk memastikan kompatibilitas dokumen yang baik.
+Aplikasi ini adalah antarmuka Streamlit untuk mengonversi file Markdown (`.md`) ke file `.docx` atau `.pdf`, serta mengonversi file `.docx`, `.doc`, dan `.pdf` kembali ke Markdown (`.md`). Konversi dilakukan menggunakan Pandoc sebagai mesin standar untuk memastikan kompatibilitas dokumen yang baik.
 
 ## Fitur Utama
 - Unggah file `.md`, `.docx`, `.doc`, atau `.pdf`
@@ -29,6 +29,7 @@ Aplikasi ini adalah antarmuka Streamlit untuk mengonversi file Markdown (`.md`) 
 ## Catatan
 - Pastikan Pandoc terpasang secara native di sistem Anda. Paket Python `pandoc` tidak cukup karena aplikasi memanggil binary `pandoc`.
 - Untuk konversi PDF, aplikasi menggunakan `xelatex` bila tersedia. Pastikan TeX engine seperti `texlive-xetex`/`texlive-latex-recommended` terpasang.
+- Pandoc mendukung output Word ke `.docx`, bukan `.doc` lama, jadi aplikasi hanya menawarkan `.docx` untuk hasil Word.
 - Tabel PDF sekarang diproses dengan filter Pandoc khusus agar isi sel panjang dibungkus (wrap text) sehingga tabel tidak saling tumpang tindih.
 
 ## About
