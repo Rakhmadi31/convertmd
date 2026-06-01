@@ -98,10 +98,7 @@ with tab_upload:
                     st.button("Konversi", disabled=True)
         with col2:
             if pandoc_available:
-                st.markdown("""
-                <div style='font-size: 13px; color:#666;'>Pastikan <b>Pandoc</b> terinstal di sistem Anda.<br>
-                <a href='https://pandoc.org/installing.html' target='_blank'>Ikuti panduan resmi</a></div>
-                """, unsafe_allow_html=True)
+                st.write("")
             else:
                 st.warning(
                     "Pandoc tidak ditemukan di sistem Anda. "
