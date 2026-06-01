@@ -7,16 +7,14 @@ pandoc_path = shutil.which("pandoc")
 pandoc_available = pandoc_path is not None
 
 def convert_file(
-    uploaded_file,
-    to_format: str,
+    uploaded_file, 
+    to_format: str, 
     save_dir: Path
 ):
     import subprocess
-    source_file = Path(uploaded_file.name)
-    output_path = save_dir / f"{source_file.stem}.{to_format}"
-    suffix = source_file.suffix or f".{uploaded_file.name.split('.')[-1]}"
+    output_path = save_dir / f"{uploaded_file.name.split('.')[0]}.{to_format}"
     # Write uploaded file to temp file
-    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}") as tmp:
         tmp.write(uploaded_file.read())
         tmp.flush()
         input_path = tmp.name
@@ -34,17 +32,10 @@ def convert_file(
             cmd = [pandoc_path, input_path, "-o", str(output_path)]
             if to_format == "pdf":
                 xelatex_path = shutil.which("xelatex")
-                pdflatex_path = shutil.which("pdflatex")
                 if xelatex_path:
                     cmd.extend(["--pdf-engine=xelatex"])
-                elif pdflatex_path:
-                    cmd.extend(["--pdf-engine=pdflatex"])
                 else:
-                    st.error(
-                        "PDF engine tidak tersedia di server. "
-                        "Pasang `xelatex` atau `pdflatex` agar konversi PDF berhasil."
-                    )
-                    return None
+                    cmd.extend(["--pdf-engine=pdflatex"])
 
                 lua_filter = Path(__file__).parent / "pandoc_wrap_tables.lua"
                 if lua_filter.exists():
@@ -58,14 +49,8 @@ def convert_file(
             )
             return output_path
         except subprocess.CalledProcessError as e:
-            stderr = e.stderr.strip() if e.stderr else ""
-            stdout = e.stdout.strip() if e.stdout else ""
-            message = stderr or stdout or str(e)
-            if stderr and stdout:
-                message = f"{stderr}\n{stdout}"
-            st.error(
-                f"Gagal mengonversi file: exit code {e.returncode}. {message}"
-            )
+            message = e.stderr.strip() if e.stderr else str(e)
+            st.error(f"Gagal mengonversi file: {message}")
             return None
         except FileNotFoundError:
             st.error(
@@ -75,11 +60,11 @@ def convert_file(
             return None
 
 st.set_page_config(page_title="Konversi File MD <-> DOCX / PDF", page_icon="📝")
-st.title("Aplikasi Konversi File: Markdown ↔️ DOCX/PDF")
+st.title("Aplikasi Konversi File: Markdown ↔️ DOCX/DOC/PDF")
 
 st.markdown("""
 **Fitur:**  
-- Konversi file _Markdown_ (`.md`) ke `.docx` atau `.pdf`
+- Konversi file _Markdown_ (`.md`) ke `.docx`, `.doc`, atau `.pdf`
 - Konversi file `.docx`, `.doc`, dan `.pdf` ke _Markdown_ (`.md`)
 - Antarmuka sederhana, cocok untuk akademisi & profesional
 
@@ -98,7 +83,7 @@ with tab_upload:
         file_ext = uploaded_file.name.split(".")[-1].lower()
         formats_to = []
         if file_ext == "md":
-            formats_to = ["docx", "pdf"]
+            formats_to = ["docx", "doc", "pdf"]
         elif file_ext in ["docx", "doc", "pdf"]:
             formats_to = ["md"]
         else:
