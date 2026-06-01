@@ -112,11 +112,7 @@ def convert_file(
 
         pandoc_path = shutil.which("pandoc")
         if pandoc_path is None:
-            st.error(
-                "Pandoc tidak ditemukan. "
-                "Pasang Pandoc secara native di sistem Anda terlebih dahulu. "
-                "Contoh: `sudo apt install pandoc` atau lihat https://pandoc.org/installing.html"
-            )
+            st.error(T["pandoc_missing"])
             return None
 
         try:
@@ -137,10 +133,7 @@ def convert_file(
             st.error(f"Gagal mengonversi file: exit code {e.returncode}. {message}")
             return None
         except FileNotFoundError:
-            st.error(
-                "Pandoc tidak ditemukan. "
-                "Pastikan executable `pandoc` tersedia di PATH sistem Anda."
-            )
+            st.error(T["pandoc_missing"])
             return None
 
 
