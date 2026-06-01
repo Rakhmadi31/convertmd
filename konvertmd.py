@@ -38,21 +38,26 @@ Konversi memanfaatkan _Pandoc_ untuk memastikan kompatibilitas format dokumen.
         "about_header": "Penjelasan Akademik",
         "upload_first": "Silakan unggah file terlebih dahulu.",
         "about_md": """
-- **Metode:**  
--  Proses konversi dokumen berbasis framework _Pandoc_, yang mendukung interoperabilitas multi-format dokumen ilmiah dan sesuai standar akademik internasional (Chicago Notes-Bibliography, PUEBI).
-- **Justifikasi Metodologis:**  
--  Pandoc dipilih karena _reliable_, _open-source_, memungkinkan pelacakan perubahan (_traceability_) dan _repeatability_ riset.
-- **Keterbatasan:**  
--  Format sangat kompleks (mis: tabel besar, gambar tersemat, formula matematika tingkat lanjut) bisa memerlukan validasi hasil konversi manual.
-- **Referensi:**  
--  - Pandoc User's Guide: https://pandoc.org/MANUAL.html
--
--**Saran Pengembangan:**
--- Integrasi dengan pengenalan metadata otomatis untuk bibliometrik.
--- Penambahan fitur pratinjau hasil.
--- Pengembangan pipeline batch processing untuk riset skala besar.
--
--_Dikembangkan sesuai etika akademik oleh Rakhmadi Irfansyah Putra_.
+**Metode:**  
+Konversi dokumen berbasis framework _Pandoc_, yang mendukung interoperabilitas multi-format dokumen ilmiah dan sesuai standar akademik internasional (Chicago Notes-Bibliography, PUEBI).
+
+**Justifikasi Metodologis:**  
+Pandoc dipilih karena _reliable_, _open-source_, memungkinkan pelacakan perubahan (_traceability_) dan _repeatability_ riset.
+
+**Keterbatasan:**  
+Format sangat kompleks (mis: tabel besar, gambar tersemat, formula matematika tingkat lanjut) dapat memerlukan validasi hasil konversi manual.
+
+**Referensi:**  
+- Pandoc User's Guide: https://pandoc.org/MANUAL.html
+
+**Saran Pengembangan:**  
+- Integrasi dengan pengenalan metadata otomatis untuk bibliometrik.
+- Penambahan fitur pratinjau hasil.
+- Pengembangan pipeline batch processing untuk riset skala besar.
+
+*_Persembahan untuk komunitas KelasInovatif._
+
+_Dikembangkan sesuai etika akademik oleh Rakhmadi Irfansyah Putra_.
 """,
     },
     "en": {
@@ -83,12 +88,19 @@ Conversion uses Pandoc to ensure document format compatibility.
         "about_header": "Academic Notes",
         "upload_first": "Please upload a file first.",
         "about_md": """
-- **Methodology:**  
--  The conversion pipeline uses Pandoc to support multi-format document interoperability.
-- **References:**  
--  - Pandoc User's Guide: https://pandoc.org/MANUAL.html
--
--_Developed with academic ethics by Rakhmadi Irfansyah Putra_.
+**Methodology:**  
+The conversion pipeline uses Pandoc to support multi-format document interoperability.
+
+**References:**  
+- Pandoc User's Guide: https://pandoc.org/MANUAL.html
+
+**Development Notes:**  
+- This app is designed for academic and professional document workflows.
+- The focus is on Markdown ↔ DOCX conversion with a simple, reliable interface.
+
+*_A dedication to the KelasInovatif community._
+
+_Developed with academic ethics by Rakhmadi Irfansyah Putra_.
 """,
     },
 }
