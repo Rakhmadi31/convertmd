@@ -2,21 +2,18 @@ import streamlit as st
 from pathlib import Path
 import tempfile
 import shutil
+import subprocess
 
 pandoc_path = shutil.which("pandoc")
 pandoc_available = pandoc_path is not None
 
-# Detect availability of TeX engines for PDF generation
-tex_engine = shutil.which("xelatex") or shutil.which("pdflatex")
-pdf_engine_available = tex_engine is not None
 
 def convert_file(
-    uploaded_file, 
-    to_format: str, 
-    save_dir: Path
+    uploaded_file,
+    to_format: str,
+    save_dir: Path,
 ):
-    import subprocess
-    output_path = save_dir / f"{uploaded_file.name.split('.')[0]}.{to_format}"
+    output_path = save_dir / f"{Path(uploaded_file.name).stem}.{to_format}"
     # Write uploaded file to temp file
     with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}") as tmp:
         tmp.write(uploaded_file.read())
@@ -34,17 +31,6 @@ def convert_file(
 
         try:
             cmd = [pandoc_path, input_path, "-o", str(output_path)]
-            if to_format == "pdf":
-                xelatex_path = shutil.which("xelatex")
-                if xelatex_path:
-                    cmd.extend(["--pdf-engine=xelatex"])
-                else:
-                    cmd.extend(["--pdf-engine=pdflatex"])
-
-                lua_filter = Path(__file__).parent / "pandoc_wrap_tables.lua"
-                if lua_filter.exists():
-                    cmd.extend(["--lua-filter", str(lua_filter)])
-
             subprocess.run(
                 cmd,
                 check=True,
@@ -53,8 +39,12 @@ def convert_file(
             )
             return output_path
         except subprocess.CalledProcessError as e:
-            message = e.stderr.strip() if e.stderr else str(e)
-            st.error(f"Gagal mengonversi file: {message}")
+            stderr = e.stderr.strip() if e.stderr else ""
+            stdout = e.stdout.strip() if e.stdout else ""
+            message = stderr or stdout or str(e)
+            if stderr and stdout:
+                message = f"{stderr}\n{stdout}"
+            st.error(f"Gagal mengonversi file: exit code {e.returncode}. {message}")
             return None
         except FileNotFoundError:
             st.error(
@@ -63,13 +53,14 @@ def convert_file(
             )
             return None
 
-st.set_page_config(page_title="Konversi File MD <-> DOCX / PDF", page_icon="📝")
-st.title("Aplikasi Konversi File: Markdown ↔️ DOCX/DOC/PDF")
+
+st.set_page_config(page_title="Konversi File MD <-> DOCX", page_icon="📝")
+st.title("Aplikasi Konversi File: Markdown ↔️ DOCX/DOC")
 
 st.markdown("""
 **Fitur:**  
-- Konversi file _Markdown_ (`.md`) ke `.docx`, `.doc`, atau `.pdf`
-- Konversi file `.docx`, `.doc`, dan `.pdf` ke _Markdown_ (`.md`)
+- Konversi file _Markdown_ (`.md`) ke `.docx`
+- Konversi file `.docx` dan `.doc` ke _Markdown_ (`.md`)
 - Antarmuka sederhana, cocok untuk akademisi & profesional
 
 **Metodologi:**  
@@ -79,7 +70,7 @@ Konversi memanfaatkan _Pandoc_ untuk memastikan kompatibilitas format dokumen (j
 tab_upload, tab_about = st.tabs(["Konversi File", "Tentang"])
 
 with tab_upload:
-    uploaded_file = st.file_uploader("Unggah file (.md, .docx, .doc, .pdf):", type=['md', 'docx', 'doc', 'pdf'])
+    uploaded_file = st.file_uploader("Unggah file (.md, .docx, .doc):", type=["md", "docx", "doc"])
     col1, col2 = st.columns(2)
 
     if uploaded_file:
@@ -88,13 +79,11 @@ with tab_upload:
         formats_to = []
         if file_ext == "md":
             formats_to = ["docx"]
-            if pdf_engine_available:
-                formats_to.append("pdf")
-        elif file_ext in ["docx", "doc", "pdf"]:
+        elif file_ext in ["docx", "doc"]:
             formats_to = ["md"]
         else:
             st.error("Tipe file tidak didukung.")
-        
+
         with col1:
             if formats_to:
                 to_format = st.selectbox("Konversi ke format:", formats_to)
@@ -104,17 +93,14 @@ with tab_upload:
                     st.button("Konversi", disabled=True)
         with col2:
             if pandoc_available:
-                if not pdf_engine_available:
-                    st.info("Konversi ke PDF dinonaktifkan: TeX engine (xelatex/pdflatex) tidak tersedia di server.")
-                else:
-                    st.write("")
+                st.write("")
             else:
                 st.warning(
                     "Pandoc tidak ditemukan di sistem Anda. "
                     "Silakan instal Pandoc secara native dengan mengikuti panduan resmi di https://pandoc.org/installing.html. "
                     "Catatan: `pip install pandoc` tidak menginstal executable Pandoc."
                 )
-        
+
         if 'convert_btn' in locals() and convert_btn:
             with st.spinner("Mengonversi..."):
                 save_dir = Path(tempfile.gettempdir())
@@ -125,7 +111,7 @@ with tab_upload:
                         st.download_button(
                             label=f"Unduh {converted.name}",
                             data=f.read(),
-                            file_name=converted.name
+                            file_name=converted.name,
                         )
                 elif not pandoc_available:
                     st.error(
