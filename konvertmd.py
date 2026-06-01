@@ -6,6 +6,10 @@ import shutil
 pandoc_path = shutil.which("pandoc")
 pandoc_available = pandoc_path is not None
 
+# Detect availability of TeX engines for PDF generation
+tex_engine = shutil.which("xelatex") or shutil.which("pdflatex")
+pdf_engine_available = tex_engine is not None
+
 def convert_file(
     uploaded_file, 
     to_format: str, 
@@ -83,7 +87,9 @@ with tab_upload:
         file_ext = uploaded_file.name.split(".")[-1].lower()
         formats_to = []
         if file_ext == "md":
-            formats_to = ["docx", "doc", "pdf"]
+            formats_to = ["docx"]
+            if pdf_engine_available:
+                formats_to.append("pdf")
         elif file_ext in ["docx", "doc", "pdf"]:
             formats_to = ["md"]
         else:
@@ -98,7 +104,10 @@ with tab_upload:
                     st.button("Konversi", disabled=True)
         with col2:
             if pandoc_available:
-                st.write("")
+                if not pdf_engine_available:
+                    st.info("Konversi ke PDF dinonaktifkan: TeX engine (xelatex/pdflatex) tidak tersedia di server.")
+                else:
+                    st.write("")
             else:
                 st.warning(
                     "Pandoc tidak ditemukan di sistem Anda. "
