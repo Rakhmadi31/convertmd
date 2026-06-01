@@ -1,13 +1,16 @@
 import streamlit as st
 from pathlib import Path
 import tempfile
+import shutil
+
+pandoc_path = shutil.which("pandoc")
+pandoc_available = pandoc_path is not None
 
 def convert_file(
     uploaded_file, 
     to_format: str, 
     save_dir: Path
 ):
-    import tempfile
     import subprocess
     output_path = save_dir / f"{uploaded_file.name.split('.')[0]}.{to_format}"
     # Write uploaded file to temp file
@@ -15,15 +18,45 @@ def convert_file(
         tmp.write(uploaded_file.read())
         tmp.flush()
         input_path = tmp.name
-        
-        # Run pandoc for conversion
+
+        pandoc_path = shutil.which("pandoc")
+        if pandoc_path is None:
+            st.error(
+                "Pandoc tidak ditemukan. "
+                "Pasang Pandoc secara native di sistem Anda terlebih dahulu. "
+                "Contoh: `sudo apt install pandoc` atau lihat https://pandoc.org/installing.html"
+            )
+            return None
+
         try:
-            subprocess.run([
-                "pandoc", input_path, "-o", str(output_path)
-            ], check=True)
+            cmd = [pandoc_path, input_path, "-o", str(output_path)]
+            if to_format == "pdf":
+                xelatex_path = shutil.which("xelatex")
+                if xelatex_path:
+                    cmd.extend(["--pdf-engine=xelatex"])
+                else:
+                    cmd.extend(["--pdf-engine=pdflatex"])
+
+                lua_filter = Path(__file__).parent / "pandoc_wrap_tables.lua"
+                if lua_filter.exists():
+                    cmd.extend(["--lua-filter", str(lua_filter)])
+
+            subprocess.run(
+                cmd,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
             return output_path
-        except Exception as e:
-            st.error(f"Gagal mengonversi file: {e}")
+        except subprocess.CalledProcessError as e:
+            message = e.stderr.strip() if e.stderr else str(e)
+            st.error(f"Gagal mengonversi file: {message}")
+            return None
+        except FileNotFoundError:
+            st.error(
+                "Pandoc tidak ditemukan. "
+                "Pastikan executable `pandoc` tersedia di PATH sistem Anda."
+            )
             return None
 
 st.set_page_config(page_title="Konversi File MD <-> DOCX / PDF", page_icon="📝")
@@ -59,12 +92,22 @@ with tab_upload:
         with col1:
             if formats_to:
                 to_format = st.selectbox("Konversi ke format:", formats_to)
-                convert_btn = st.button("Konversi")
+                if pandoc_available:
+                    convert_btn = st.button("Konversi")
+                else:
+                    st.button("Konversi", disabled=True)
         with col2:
-            st.markdown("""
-            <div style='font-size: 13px; color:#666;'>Pastikan <b>Pandoc</b> terinstal di sistem Anda.<br>
-            <code>pip install pandoc</code> atau <a href='https://pandoc.org/installing.html' target='_blank'>Ikuti panduan resmi</a></div>
-            """, unsafe_allow_html=True)
+            if pandoc_available:
+                st.markdown("""
+                <div style='font-size: 13px; color:#666;'>Pastikan <b>Pandoc</b> terinstal di sistem Anda.<br>
+                <a href='https://pandoc.org/installing.html' target='_blank'>Ikuti panduan resmi</a></div>
+                """, unsafe_allow_html=True)
+            else:
+                st.warning(
+                    "Pandoc tidak ditemukan di sistem Anda. "
+                    "Silakan instal Pandoc secara native dengan mengikuti panduan resmi di https://pandoc.org/installing.html. "
+                    "Catatan: `pip install pandoc` tidak menginstal executable Pandoc."
+                )
         
         if 'convert_btn' in locals() and convert_btn:
             with st.spinner("Mengonversi..."):
@@ -78,6 +121,11 @@ with tab_upload:
                             data=f.read(),
                             file_name=converted.name
                         )
+                elif not pandoc_available:
+                    st.error(
+                        "Konversi gagal karena Pandoc tidak tersedia. "
+                        "Silakan instal Pandoc terlebih dahulu dan muat ulang aplikasi."
+                    )
     else:
         st.info("Silakan unggah file terlebih dahulu.")
 

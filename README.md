@@ -27,8 +27,9 @@ Aplikasi ini adalah antarmuka Streamlit untuk mengonversi file Markdown (`.md`) 
 5. Unggah file dan pilih format konversi.
 
 ## Catatan
-- Pastikan Pandoc terpasang secara native di sistem Anda, bukan hanya paket Python.
-- Untuk konversi PDF, mungkin diperlukan dependensi tambahan di sistem operasi.
+- Pastikan Pandoc terpasang secara native di sistem Anda. Paket Python `pandoc` tidak cukup karena aplikasi memanggil binary `pandoc`.
+- Untuk konversi PDF, aplikasi menggunakan `xelatex` bila tersedia. Pastikan TeX engine seperti `texlive-xetex`/`texlive-latex-recommended` terpasang.
+- Tabel PDF sekarang diproses dengan filter Pandoc khusus agar isi sel panjang dibungkus (wrap text) sehingga tabel tidak saling tumpang tindih.
 
 ## About
 Aplikasi ini cocok untuk penggunaan akademik dan profesional, membantu mengonversi dokumen dengan cepat dan memudahkan proses kolaborasi lintas format.
